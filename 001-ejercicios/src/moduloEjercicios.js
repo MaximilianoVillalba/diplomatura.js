@@ -19,12 +19,35 @@ import basededatos from './basededatos';
       universidad: 2,
     }
   ]
- * @param {number} alumnoId el id del alumno
+ * @param {String} nombreAlumno el id del alumno
  */
 export const materiasAprobadasByNombreAlumno = (nombreAlumno) => {
-  // Ejemplo de como accedo a datos dentro de la base de datos
-  // console.log(basededatos.alumnos);
-  return [];
+  let materiasAlum = [];
+  let materiasAprob = [];
+
+  let alumno = basededatos.alumnos.find(alumn => alumn.nombre === nombreAlumno);
+  if (alumno) {
+    basededatos.calificaciones.forEach(
+      elemen => {
+        if (elemen.alumno == alumno.id && elemen.nota >= 4) {
+          materiasAlum.push(elemen);
+        }
+      }
+    )
+
+    for (let i = 0; i < materiasAlum.length; i++) {
+      basededatos.materias.forEach(
+        materia => {
+          if (materia.id == materiasAlum[i].materia) {
+            materiasAprob.push(materia);
+          }
+        }
+      )
+    }
+  } else {
+    return undefined;
+  }
+  return materiasAprob;
 };
 
 /**
@@ -69,7 +92,58 @@ export const materiasAprobadasByNombreAlumno = (nombreAlumno) => {
  * @param {string} nombreUniversidad
  */
 export const expandirInfoUniversidadByNombre = (nombreUniversidad) => {
-  return {};
+  let arregloMaterias = [];
+  let arregloUni = [];
+  let arregloProfesFinal = [];
+  let arregloAlum = [];
+  let arregloAlumFinal = [];
+
+  let uni = basededatos.universidades.find(universidad => universidad.nombre === nombreUniversidad);
+  if (uni) {
+    arregloUni.push(uni);
+    basededatos.materias.forEach(
+      materia => {
+        if (materia.universidad === uni.id) {
+          arregloMaterias.push(materia);
+        }
+      }
+    )
+
+    basededatos.profesores.forEach(
+      profe => {
+        for (let i = 0; i < arregloMaterias.length; i++) {
+          let arregloProfePorMateria = arregloMaterias[i].profesores;
+          for (let j = 0; j < arregloProfePorMateria.length; j++) {
+            if (profe.id == arregloProfePorMateria[j] && !(arregloProfesFinal.includes(profe))) {
+              arregloProfesFinal.push(profe);
+            }
+          }
+        }
+      }
+    )
+
+    for (let k = 0; k < arregloMaterias.length; k++) {
+      basededatos.calificaciones.forEach(
+        cali => {
+          if (arregloMaterias[k].id === cali.materia) {
+            basededatos.alumnos.find(
+              alumno => {
+                if(alumno.id === cali.alumno && !(arregloAlumFinal.includes(alumno))){
+                  arregloAlumFinal.push(alumno);
+                }
+              }
+            )
+          }
+        }
+      )
+    }
+    arregloUni.materias = arregloMaterias;
+    arregloUni.profesores = arregloProfesFinal;
+    arregloUni.alumnos = arregloAlumFinal;
+  } else {
+    return undefined;
+  }
+  return arregloUni;
 };
 
 // /**
